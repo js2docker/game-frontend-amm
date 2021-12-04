@@ -1,4 +1,4 @@
-import { ChainId, Token } from '@pancakeswap-libs/sdk'
+import { ChainId, Token } from 'moonbeamswap'
 import { Tags, TokenInfo, TokenList } from '@uniswap/token-lists'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -14,15 +14,12 @@ export interface TagInfo extends TagDetails {
  */
 export class WrappedTokenInfo extends Token {
   public readonly tokenInfo: TokenInfo
-
   public readonly tags: TagInfo[]
-
   constructor(tokenInfo: TokenInfo, tags: TagInfo[]) {
     super(tokenInfo.chainId, tokenInfo.address, tokenInfo.decimals, tokenInfo.symbol, tokenInfo.name)
     this.tokenInfo = tokenInfo
     this.tags = tags
   }
-
   public get logoURI(): string | undefined {
     return this.tokenInfo.logoURI
   }
@@ -35,7 +32,10 @@ export type TokenAddressMap = Readonly<{ [chainId in ChainId]: Readonly<{ [token
  */
 const EMPTY_LIST: TokenAddressMap = {
   [ChainId.MAINNET]: {},
-  [ChainId.BSCTESTNET]: {}
+  [ChainId.STANDALONE]: {},
+  [ChainId.MOONROCK]: {},
+  [ChainId.MOONBASE]: {},
+  [ChainId.MOONSHADOW]: {}
 }
 
 const listCache: WeakMap<TokenList, TokenAddressMap> | null =

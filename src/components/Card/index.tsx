@@ -1,8 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Text } from '@pancakeswap-libs/uikit'
+import { CardProps, Text } from 'rebass'
+import { Box } from 'rebass/styled-components'
 
-const Card = styled.div<any>`
+const Card = styled(Box)<{ padding?: string; border?: string; borderRadius?: string }>`
   width: 100%;
   border-radius: 16px;
   padding: 1.25rem;
@@ -13,41 +14,43 @@ const Card = styled.div<any>`
 export default Card
 
 export const LightCard = styled(Card)`
-  border: 1px solid ${({ theme }) => theme.colors.invertedContrast};
-  background-color: ${({ theme }) => theme.colors.invertedContrast};
+  border: 1px solid ${({ theme }) => theme.bg2};
+  background-color: ${({ theme }) => theme.bg1};
 `
 
 export const GreyCard = styled(Card)`
-  background-color: ${({ theme }) => theme.colors.tertiary};
+  background-color: ${({ theme }) => theme.bg3};
 `
 
 export const OutlineCard = styled(Card)`
-  border: 1px solid ${({ theme }) => theme.colors.tertiary};
+  border: 1px solid ${({ theme }) => theme.bg3};
 `
 
 export const YellowCard = styled(Card)`
   background-color: rgba(243, 132, 30, 0.05);
-  color: ${({ theme }) => theme.colors.binance};
+  color: ${({ theme }) => theme.yellow2};
   font-weight: 500;
 `
 
 export const PinkCard = styled(Card)`
   background-color: rgba(255, 0, 122, 0.03);
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.primary1};
   font-weight: 500;
 `
 
 const BlueCardStyled = styled(Card)`
-  background-color: ${({ theme }) => theme.colors.primaryDark};
-  color: ${({ theme }) => theme.colors.primary};
+  background-color: ${({ theme }) => theme.primary5};
+  color: ${({ theme }) => theme.primary1};
   border-radius: 12px;
   width: fit-content;
 `
 
-export const BlueCard = ({ children, ...rest }: any) => {
+export const BlueCard = ({ children, ...rest }: CardProps) => {
   return (
     <BlueCardStyled {...rest}>
-      <Text color="#24c7d6">{children}</Text>
+      <Text fontWeight={500} color="#2172E5">
+        {children}
+      </Text>
     </BlueCardStyled>
   )
 }

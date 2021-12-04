@@ -1,38 +1,35 @@
 import React, { useCallback, useContext } from 'react'
 import { useDispatch } from 'react-redux'
 import styled, { ThemeContext } from 'styled-components'
-import { Button } from '@pancakeswap-libs/uikit'
-import { ExternalLink as LinkIcon } from 'react-feather'
 import { useActiveWeb3React } from '../../hooks'
 import { AppDispatch } from '../../state'
 import { clearAllTransactions } from '../../state/transactions/actions'
-import { shortenAddress, getEtherscanLink } from '../../utils'
+import { shortenAddress } from '../../utils'
 import { AutoRow } from '../Row'
 import Copy from './Copy'
 import Transaction from './Transaction'
 
 import { SUPPORTED_WALLETS } from '../../constants'
 import { ReactComponent as Close } from '../../assets/images/x.svg'
-
-import { injected, walletconnect, walletlink, fortmatic, portis, bsc } from '../../connectors'
+import { getEtherscanLink } from '../../utils'
+import { injected, walletconnect, walletlink, fortmatic, portis } from '../../connectors'
 import CoinbaseWalletIcon from '../../assets/images/coinbaseWalletIcon.svg'
 import WalletConnectIcon from '../../assets/images/walletConnectIcon.svg'
 import FortmaticIcon from '../../assets/images/fortmaticIcon.png'
 import PortisIcon from '../../assets/images/portisIcon.png'
 import Identicon from '../Identicon'
-import { ExternalLink, LinkStyledButton, TYPE } from '../Shared'
-
-const { body: Body } = TYPE
+import { ButtonSecondary } from '../Button'
+import { ExternalLink as LinkIcon } from 'react-feather'
+import { ExternalLink, LinkStyledButton, TYPE } from '../../theme'
 
 const HeaderRow = styled.div`
-  display: flex;
-flex-flow: row nowrap;
+  ${({ theme }) => theme.flexRowNoWrap};
   padding: 1rem 1rem;
   font-weight: 500;
-  color: ${(props) => (props.color === 'blue' ? ({ theme }) => theme.colors.primary : 'inherit')};
-  ${({ theme }) => theme.mediaQueries.lg}
+  color: ${props => (props.color === 'blue' ? ({ theme }) => theme.primary1 : 'inherit')};
+  ${({ theme }) => theme.mediaWidth.upToMedium`
     padding: 1rem;
-  }
+  `};
 `
 
 const UpperSection = styled.div`
@@ -57,7 +54,7 @@ const UpperSection = styled.div`
 
 const InfoCard = styled.div`
   padding: 1rem;
-  border: 1px solid ${({ theme }) => theme.colors.tertiary};
+  border: 1px solid ${({ theme }) => theme.bg3};
   border-radius: 20px;
   position: relative;
   display: grid;
@@ -66,26 +63,22 @@ const InfoCard = styled.div`
 `
 
 const AccountGroupingRow = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
+  ${({ theme }) => theme.flexRowNoWrap};
   justify-content: space-between;
   align-items: center;
   font-weight: 400;
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.text1};
 
   div {
-    display: flex;
-    flex-flow: row nowrap;
+    ${({ theme }) => theme.flexRowNoWrap}
     align-items: center;
   }
 `
 
 const AccountSection = styled.div`
-  background-color: ${({ theme }) => theme.colors.invertedContrast};
+  background-color: ${({ theme }) => theme.bg1};
   padding: 0rem 1rem;
-  ${({ theme }) => theme.mediaQueries.lg} {
-    padding: 0rem 1rem 1.5rem 1rem;
-  }
+  ${({ theme }) => theme.mediaWidth.upToMedium`padding: 0rem 1rem 1.5rem 1rem;`};
 `
 
 const YourAccount = styled.div`
@@ -101,19 +94,18 @@ const YourAccount = styled.div`
 `
 
 const LowerSection = styled.div`
-  display: flex;
-  flex-flow: column nowrap;
+  ${({ theme }) => theme.flexColumnNoWrap}
   padding: 1.5rem;
   flex-grow: 1;
   overflow: auto;
-  background-color: ${({ theme }) => theme.colors.invertedContrast};
+  background-color: ${({ theme }) => theme.bg2};
   border-bottom-left-radius: 25px;
   border-bottom-right-radius: 20px;
 
   h5 {
     margin: 0;
     font-weight: 400;
-    color: ${({ theme }) => theme.colors.textDisabled};
+    color: ${({ theme }) => theme.text3};
   }
 `
 
@@ -141,12 +133,12 @@ const AccountControl = styled.div`
 
 const AddressLink = styled(ExternalLink)<{ hasENS: boolean; isENS: boolean }>`
   font-size: 0.825rem;
-  color: ${({ theme }) => theme.colors.textDisabled};
+  color: ${({ theme }) => theme.text3};
   margin-left: 1rem;
   font-size: 0.825rem;
   display: flex;
   :hover {
-    color: ${({ theme }) => theme.colors.textSubtle};
+    color: ${({ theme }) => theme.text2};
   }
 `
 
@@ -162,7 +154,7 @@ const CloseIcon = styled.div`
 
 const CloseColor = styled(Close)`
   path {
-    stroke: ${({ theme }) => theme.colors.textDisabled};
+    stroke: ${({ theme }) => theme.text4};
   }
 `
 
@@ -170,31 +162,29 @@ const WalletName = styled.div`
   width: initial;
   font-size: 0.825rem;
   font-weight: 500;
-  color: ${({ theme }) => theme.colors.textDisabled};
+  color: ${({ theme }) => theme.text3};
 `
 
 const IconWrapper = styled.div<{ size?: number }>`
-  display: flex;
-  flex-flow: column nowrap;
+  ${({ theme }) => theme.flexColumnNoWrap};
   align-items: center;
   justify-content: center;
   margin-right: 8px;
   & > img,
   span {
-    height: ${({ size }) => (size ? `${size}px` : '32px')};
-    width: ${({ size }) => (size ? `${size}px` : '32px')};
+    height: ${({ size }) => (size ? size + 'px' : '32px')};
+    width: ${({ size }) => (size ? size + 'px' : '32px')};
   }
-  ${({ theme }) => theme.mediaQueries.lg} {
+  ${({ theme }) => theme.mediaWidth.upToMedium`
     align-items: flex-end;
-  }
+  `};
 `
 
 const TransactionListWrapper = styled.div`
-  display: flex;
-  flex-flow: column nowrap;
+  ${({ theme }) => theme.flexColumnNoWrap};
 `
 
-const WalletAction = styled(Button)`
+const WalletAction = styled(ButtonSecondary)`
   width: fit-content;
   font-weight: 400;
   margin-left: 8px;
@@ -207,14 +197,13 @@ const WalletAction = styled(Button)`
 `
 
 const MainWalletAction = styled(WalletAction)`
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.primary1};
 `
 
 function renderTransactions(transactions: string[]) {
   return (
     <TransactionListWrapper>
       {transactions.map((hash, i) => {
-        // eslint-disable-next-line react/no-array-index-key
         return <Transaction key={i} hash={hash} />
       })}
     </TransactionListWrapper>
@@ -234,7 +223,7 @@ export default function AccountDetails({
   pendingTransactions,
   confirmedTransactions,
   ENSName,
-  openOptions,
+  openOptions
 }: AccountDetailsProps) {
   const { chainId, account, connector } = useActiveWeb3React()
   const theme = useContext(ThemeContext)
@@ -245,10 +234,10 @@ export default function AccountDetails({
     const isMetaMask = !!(ethereum && ethereum.isMetaMask)
     const name = Object.keys(SUPPORTED_WALLETS)
       .filter(
-        (k) =>
+        k =>
           SUPPORTED_WALLETS[k].connector === connector && (connector !== injected || isMetaMask === (k === 'METAMASK'))
       )
-      .map((k) => SUPPORTED_WALLETS[k].name)[0]
+      .map(k => SUPPORTED_WALLETS[k].name)[0]
     return <WalletName>Connected with {name}</WalletName>
   }
 
@@ -259,33 +248,29 @@ export default function AccountDetails({
           <Identicon />
         </IconWrapper>
       )
-    }
-    if (connector === walletconnect) {
+    } else if (connector === walletconnect) {
       return (
         <IconWrapper size={16}>
-          <img src={WalletConnectIcon} alt="wallet connect logo" />
+          <img src={WalletConnectIcon} alt={'wallet connect logo'} />
         </IconWrapper>
       )
-    }
-    if (connector === walletlink) {
+    } else if (connector === walletlink) {
       return (
         <IconWrapper size={16}>
-          <img src={CoinbaseWalletIcon} alt="coinbase wallet logo" />
+          <img src={CoinbaseWalletIcon} alt={'coinbase wallet logo'} />
         </IconWrapper>
       )
-    }
-    if (connector === fortmatic) {
+    } else if (connector === fortmatic) {
       return (
         <IconWrapper size={16}>
-          <img src={FortmaticIcon} alt="fortmatic logo" />
+          <img src={FortmaticIcon} alt={'fortmatic logo'} />
         </IconWrapper>
       )
-    }
-    if (connector === portis) {
+    } else if (connector === portis) {
       return (
         <>
           <IconWrapper size={16}>
-            <img src={PortisIcon} alt="portis logo" />
+            <img src={PortisIcon} alt={'portis logo'} />
             <MainWalletAction
               onClick={() => {
                 portis.portis.showPortis()
@@ -317,11 +302,11 @@ export default function AccountDetails({
               <AccountGroupingRow>
                 {formatConnectorName()}
                 <div>
-                  {connector !== injected && connector !== walletlink && connector !== bsc && (
+                  {connector !== injected && connector !== walletlink && (
                     <WalletAction
                       style={{ fontSize: '.825rem', fontWeight: 400, marginRight: '8px' }}
                       onClick={() => {
-                        (connector as any).close()
+                        ;(connector as any).close()
                       }}
                     >
                       Disconnect
@@ -369,11 +354,11 @@ export default function AccountDetails({
                         {chainId && account && (
                           <AddressLink
                             hasENS={!!ENSName}
-                            isENS
+                            isENS={true}
                             href={chainId && getEtherscanLink(chainId, ENSName, 'address')}
                           >
                             <LinkIcon size={16} />
-                            <span style={{ marginLeft: '4px' }}>View on bscscan</span>
+                            <span style={{ marginLeft: '4px' }}>View on Etherscan</span>
                           </AddressLink>
                         )}
                       </div>
@@ -395,7 +380,7 @@ export default function AccountDetails({
                             href={getEtherscanLink(chainId, account, 'address')}
                           >
                             <LinkIcon size={16} />
-                            <span style={{ marginLeft: '4px' }}>View on bscscan</span>
+                            <span style={{ marginLeft: '4px' }}>View on Etherscan</span>
                           </AddressLink>
                         )}
                       </div>
@@ -409,8 +394,8 @@ export default function AccountDetails({
       </UpperSection>
       {!!pendingTransactions.length || !!confirmedTransactions.length ? (
         <LowerSection>
-          <AutoRow mb="1rem" style={{ justifyContent: 'space-between' }}>
-            <Body>Recent Transactions</Body>
+          <AutoRow mb={'1rem'} style={{ justifyContent: 'space-between' }}>
+            <TYPE.body>Recent Transactions</TYPE.body>
             <LinkStyledButton onClick={clearAllTransactionsCallback}>(clear all)</LinkStyledButton>
           </AutoRow>
           {renderTransactions(pendingTransactions)}
@@ -418,7 +403,7 @@ export default function AccountDetails({
         </LowerSection>
       ) : (
         <LowerSection>
-          <Body color={theme.colors.text}>Your transactions will appear here...</Body>
+          <TYPE.body color={theme.text1}>Your transactions will appear here...</TYPE.body>
         </LowerSection>
       )}
     </>

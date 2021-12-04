@@ -4,8 +4,8 @@ import { AddressZero } from '@ethersproject/constants'
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
 import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
-import { ChainId, JSBI, Percent, Token, CurrencyAmount, Currency, ETHER } from '@pancakeswap-libs/sdk'
 import { ROUTER_ADDRESS } from '../constants'
+import { ChainId, JSBI, Percent, Token, CurrencyAmount, Currency, DEV } from 'moonbeamswap'
 import { TokenAddressMap } from '../state/lists/hooks'
 
 // returns the checksummed address if the address is valid, otherwise returns false
@@ -16,15 +16,16 @@ export function isAddress(value: any): string | false {
     return false
   }
 }
-
-const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
-  56: '',
-  97: 'Bsc-testnet'
+/*
+const DEVSCAN_PREFIXES: { [chainId in ChainId]: string } = {
+  1: '',
+  1287: 'xxxxxxxxx',
 }
+*/
 
 export function getEtherscanLink(chainId: ChainId, data: string, type: 'transaction' | 'token' | 'address'): string {
-  const prefix = `https://${ETHERSCAN_PREFIXES[chainId] || ETHERSCAN_PREFIXES[56]}bscscan.com`
-
+  //const prefix = `https://${DEVSCAN_PREFIXES[chainId] || DEVSCAN_PREFIXES[1]}etherscan.io`
+  const prefix = 'https://moonbase-blockscout.testnet.moonbeam.network'
   switch (type) {
     case 'transaction': {
       return `${prefix}/tx/${data}`
@@ -88,8 +89,8 @@ export function getContract(address: string, ABI: any, library: Web3Provider, ac
 }
 
 // account is optional
-export function getRouterContract(_: number, library: Web3Provider, account?: string): Contract {
-  return getContract(ROUTER_ADDRESS, IUniswapV2Router02ABI, library, account)
+export function getRouterContract(chainId: number, library: Web3Provider, account?: string): Contract {
+  return getContract(ROUTER_ADDRESS[chainId ? chainId.toString() : ''], IUniswapV2Router02ABI, library, account)
 }
 
 export function escapeRegExp(string: string): string {
@@ -97,6 +98,6 @@ export function escapeRegExp(string: string): string {
 }
 
 export function isTokenOnList(defaultTokens: TokenAddressMap, currency?: Currency): boolean {
-  if (currency === ETHER) return true
+  if (currency === DEV) return true
   return Boolean(currency instanceof Token && defaultTokens[currency.chainId]?.[currency.address])
 }

@@ -1,21 +1,24 @@
-import React, { useState } from 'react'
-import { JSBI, Pair, Percent } from '@pancakeswap-libs/sdk'
-import { Button, Card as UIKitCard, CardBody, Text } from '@pancakeswap-libs/uikit'
+import { JSBI, Pair, Percent } from 'moonbeamswap'
 import { darken } from 'polished'
+import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import { Link } from 'react-router-dom'
+import { Text } from 'rebass'
 import styled from 'styled-components'
 import { useTotalSupply } from '../../data/TotalSupply'
 
 import { useActiveWeb3React } from '../../hooks'
 import { useTokenBalance } from '../../state/wallet/hooks'
+import { ExternalLink } from '../../theme'
 import { currencyId } from '../../utils/currencyId'
 import { unwrappedToken } from '../../utils/wrappedCurrency'
-import Card from '../Card'
+import { ButtonSecondary } from '../Button'
+
+import Card, { GreyCard } from '../Card'
 import { AutoColumn } from '../Column'
 import CurrencyLogo from '../CurrencyLogo'
 import DoubleCurrencyLogo from '../DoubleLogo'
-import { RowBetween, RowFixed } from '../Row'
+import { AutoRow, RowBetween, RowFixed } from '../Row'
 import { Dots } from '../swap/styleds'
 
 export const FixedHeightRow = styled(RowBetween)`
@@ -23,19 +26,19 @@ export const FixedHeightRow = styled(RowBetween)`
 `
 
 export const HoverCard = styled(Card)`
-  border: 1px solid ${({ theme }) => theme.colors.invertedContrast};
+  border: 1px solid ${({ theme }) => theme.bg2};
   :hover {
-    border: 1px solid ${({ theme }) => darken(0.06, theme.colors.invertedContrast)};
+    border: 1px solid ${({ theme }) => darken(0.06, theme.bg2)};
   }
 `
 
 interface PositionCardProps {
   pair: Pair
-  // eslint-disable-next-line react/no-unused-prop-types
   showUnwrapped?: boolean
+  border?: string
 }
 
-export function MinimalPositionCard({ pair, showUnwrapped = false }: PositionCardProps) {
+export function MinimalPositionCard({ pair, showUnwrapped = false, border }: PositionCardProps) {
   const { account } = useActiveWeb3React()
 
   const currency0 = showUnwrapped ? pair.token0 : unwrappedToken(pair.token0)
@@ -54,69 +57,73 @@ export function MinimalPositionCard({ pair, showUnwrapped = false }: PositionCar
     JSBI.greaterThanOrEqual(totalPoolTokens.raw, userPoolBalance.raw)
       ? [
           pair.getLiquidityValue(pair.token0, totalPoolTokens, userPoolBalance, false),
-          pair.getLiquidityValue(pair.token1, totalPoolTokens, userPoolBalance, false),
+          pair.getLiquidityValue(pair.token1, totalPoolTokens, userPoolBalance, false)
         ]
       : [undefined, undefined]
 
   return (
     <>
       {userPoolBalance && (
-        <UIKitCard>
-          <CardBody>
-            <AutoColumn gap="12px">
+        <GreyCard border={border}>
+          <AutoColumn gap="12px">
+            <FixedHeightRow>
+              <RowFixed>
+                <Text fontWeight={500} fontSize={16}>
+                  Your position
+                </Text>
+              </RowFixed>
+            </FixedHeightRow>
+            <FixedHeightRow onClick={() => setShowMore(!showMore)}>
+              <RowFixed>
+                <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin={true} size={20} />
+                <Text fontWeight={500} fontSize={20}>
+                  {currency0.symbol}/{currency1.symbol}
+                </Text>
+              </RowFixed>
+              <RowFixed>
+                <Text fontWeight={500} fontSize={20}>
+                  {userPoolBalance ? userPoolBalance.toSignificant(4) : '-'}
+                </Text>
+              </RowFixed>
+            </FixedHeightRow>
+            <AutoColumn gap="4px">
               <FixedHeightRow>
-                <RowFixed>
-                  <Text style={{ textTransform: 'uppercase', fontWeight: 600 }} fontSize="14px" color="textSubtle">
-                    LP Tokens in your Wallet
-                  </Text>
-                </RowFixed>
+                <Text color="#888D9B" fontSize={16} fontWeight={500}>
+                  {currency0.symbol}:
+                </Text>
+                {token0Deposited ? (
+                  <RowFixed>
+                    <Text color="#888D9B" fontSize={16} fontWeight={500} marginLeft={'6px'}>
+                      {token0Deposited?.toSignificant(6)}
+                    </Text>
+                  </RowFixed>
+                ) : (
+                  '-'
+                )}
               </FixedHeightRow>
-              <FixedHeightRow onClick={() => setShowMore(!showMore)}>
-                <RowFixed>
-                  <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} />
-                  <Text fontSize="14px">
-                    {currency0.symbol}/{currency1.symbol}
-                  </Text>
-                </RowFixed>
-                <RowFixed>
-                  <Text fontSize="14px">{userPoolBalance ? userPoolBalance.toSignificant(4) : '-'}</Text>
-                </RowFixed>
+              <FixedHeightRow>
+                <Text color="#888D9B" fontSize={16} fontWeight={500}>
+                  {currency1.symbol}:
+                </Text>
+                {token1Deposited ? (
+                  <RowFixed>
+                    <Text color="#888D9B" fontSize={16} fontWeight={500} marginLeft={'6px'}>
+                      {token1Deposited?.toSignificant(6)}
+                    </Text>
+                  </RowFixed>
+                ) : (
+                  '-'
+                )}
               </FixedHeightRow>
-              <AutoColumn gap="4px">
-                <FixedHeightRow>
-                  <Text fontSize="14px">{currency0.symbol}:</Text>
-                  {token0Deposited ? (
-                    <RowFixed>
-                      <Text ml="6px" fontSize="14px">
-                        {token0Deposited?.toSignificant(6)}
-                      </Text>
-                    </RowFixed>
-                  ) : (
-                    '-'
-                  )}
-                </FixedHeightRow>
-                <FixedHeightRow>
-                  <Text fontSize="14px">{currency1.symbol}:</Text>
-                  {token1Deposited ? (
-                    <RowFixed>
-                      <Text ml="6px" fontSize="14px">
-                        {token1Deposited?.toSignificant(6)}
-                      </Text>
-                    </RowFixed>
-                  ) : (
-                    '-'
-                  )}
-                </FixedHeightRow>
-              </AutoColumn>
             </AutoColumn>
-          </CardBody>
-        </UIKitCard>
+          </AutoColumn>
+        </GreyCard>
       )}
     </>
   )
 }
 
-export default function FullPositionCard({ pair }: PositionCardProps) {
+export default function FullPositionCard({ pair, border }: PositionCardProps) {
   const { account } = useActiveWeb3React()
 
   const currency0 = unwrappedToken(pair.token0)
@@ -140,17 +147,19 @@ export default function FullPositionCard({ pair }: PositionCardProps) {
     JSBI.greaterThanOrEqual(totalPoolTokens.raw, userPoolBalance.raw)
       ? [
           pair.getLiquidityValue(pair.token0, totalPoolTokens, userPoolBalance, false),
-          pair.getLiquidityValue(pair.token1, totalPoolTokens, userPoolBalance, false),
+          pair.getLiquidityValue(pair.token1, totalPoolTokens, userPoolBalance, false)
         ]
       : [undefined, undefined]
 
   return (
-    <HoverCard>
+    <HoverCard border={border}>
       <AutoColumn gap="12px">
         <FixedHeightRow onClick={() => setShowMore(!showMore)} style={{ cursor: 'pointer' }}>
           <RowFixed>
-            <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin size={20} />
-            <Text>{!currency0 || !currency1 ? <Dots>Loading</Dots> : `${currency0.symbol}/${currency1.symbol}`}</Text>
+            <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin={true} size={20} />
+            <Text fontWeight={500} fontSize={20}>
+              {!currency0 || !currency1 ? <Dots>Loading</Dots> : `${currency0.symbol}/${currency1.symbol}`}
+            </Text>
           </RowFixed>
           <RowFixed>
             {showMore ? (
@@ -164,11 +173,15 @@ export default function FullPositionCard({ pair }: PositionCardProps) {
           <AutoColumn gap="8px">
             <FixedHeightRow>
               <RowFixed>
-                <Text>Pooled {currency0.symbol}:</Text>
+                <Text fontSize={16} fontWeight={500}>
+                  Pooled {currency0.symbol}:
+                </Text>
               </RowFixed>
               {token0Deposited ? (
                 <RowFixed>
-                  <Text ml="6px">{token0Deposited?.toSignificant(6)}</Text>
+                  <Text fontSize={16} fontWeight={500} marginLeft={'6px'}>
+                    {token0Deposited?.toSignificant(6)}
+                  </Text>
                   <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} />
                 </RowFixed>
               ) : (
@@ -178,11 +191,15 @@ export default function FullPositionCard({ pair }: PositionCardProps) {
 
             <FixedHeightRow>
               <RowFixed>
-                <Text>Pooled {currency1.symbol}:</Text>
+                <Text fontSize={16} fontWeight={500}>
+                  Pooled {currency1.symbol}:
+                </Text>
               </RowFixed>
               {token1Deposited ? (
                 <RowFixed>
-                  <Text ml="6px">{token1Deposited?.toSignificant(6)}</Text>
+                  <Text fontSize={16} fontWeight={500} marginLeft={'6px'}>
+                    {token1Deposited?.toSignificant(6)}
+                  </Text>
                   <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} />
                 </RowFixed>
               ) : (
@@ -190,25 +207,32 @@ export default function FullPositionCard({ pair }: PositionCardProps) {
               )}
             </FixedHeightRow>
             <FixedHeightRow>
-              <Text>Your pool tokens:</Text>
-              <Text>{userPoolBalance ? userPoolBalance.toSignificant(4) : '-'}</Text>
+              <Text fontSize={16} fontWeight={500}>
+                Your pool tokens:
+              </Text>
+              <Text fontSize={16} fontWeight={500}>
+                {userPoolBalance ? userPoolBalance.toSignificant(4) : '-'}
+              </Text>
             </FixedHeightRow>
             <FixedHeightRow>
-              <Text>Your pool share:</Text>
-              <Text>{poolTokenPercentage ? `${poolTokenPercentage.toFixed(2)}%` : '-'}</Text>
+              <Text fontSize={16} fontWeight={500}>
+                Your pool share:
+              </Text>
+              <Text fontSize={16} fontWeight={500}>
+                {poolTokenPercentage ? poolTokenPercentage.toFixed(2) + '%' : '-'}
+              </Text>
             </FixedHeightRow>
 
+            <AutoRow justify="center" marginTop={'10px'}>
+              <ExternalLink href={`.....`}>View pool information (comming soon) ↗</ExternalLink>
+            </AutoRow>
             <RowBetween marginTop="10px">
-              <Button as={Link} to={`/add/${currencyId(currency0)}/${currencyId(currency1)}`} style={{ width: '48%' }}>
+              <ButtonSecondary as={Link} to={`/add/${currencyId(currency0)}/${currencyId(currency1)}`} width="48%">
                 Add
-              </Button>
-              <Button
-                as={Link}
-                style={{ width: '48%' }}
-                to={`/remove/${currencyId(currency0)}/${currencyId(currency1)}`}
-              >
+              </ButtonSecondary>
+              <ButtonSecondary as={Link} width="48%" to={`/remove/${currencyId(currency0)}/${currencyId(currency1)}`}>
                 Remove
-              </Button>
+              </ButtonSecondary>
             </RowBetween>
           </AutoColumn>
         )}

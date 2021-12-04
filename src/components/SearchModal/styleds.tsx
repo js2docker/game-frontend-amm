@@ -3,8 +3,7 @@ import { AutoColumn } from '../Column'
 import { RowBetween, RowFixed } from '../Row'
 
 export const ModalInfo = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
+  ${({ theme }) => theme.flexRowNoWrap}
   align-items: center;
   padding: 1rem 1rem;
   margin: 0.25rem 0.5rem;
@@ -14,7 +13,7 @@ export const ModalInfo = styled.div`
 `
 
 export const FadedSpan = styled(RowFixed)`
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.primary1};
   font-size: 14px;
 `
 
@@ -32,7 +31,7 @@ export const MenuItem = styled(RowBetween)`
   cursor: ${({ disabled }) => !disabled && 'pointer'};
   pointer-events: ${({ disabled }) => disabled && 'none'};
   :hover {
-    background-color: ${({ theme, disabled }) => !disabled && theme.colors.invertedContrast};
+    background-color: ${({ theme, disabled }) => !disabled && theme.bg2};
   }
   opacity: ${({ disabled, selected }) => (disabled || selected ? 0.5 : 1)};
 `
@@ -48,30 +47,30 @@ export const SearchInput = styled.input`
   border: none;
   outline: none;
   border-radius: 20px;
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.text1};
   border-style: solid;
-  border: 1px solid ${({ theme }) => theme.colors.tertiary};
+  border: 1px solid ${({ theme }) => theme.bg3};
   -webkit-appearance: none;
 
   font-size: 18px;
 
   ::placeholder {
-    color: ${({ theme }) => theme.colors.textDisabled};
+    color: ${({ theme }) => theme.text3};
   }
   transition: border 100ms;
   :focus {
-    border: 1px solid ${({ theme }) => theme.colors.primary};
+    border: 1px solid ${({ theme }) => theme.primary1};
     outline: none;
   }
 `
 export const Separator = styled.div`
   width: 100%;
   height: 1px;
-  background-color: ${({ theme }) => theme.colors.invertedContrast};
+  background-color: ${({ theme }) => theme.bg2};
 `
 
 export const SeparatorDark = styled.div`
   width: 100%;
   height: 1px;
-  background-color: ${({ theme }) => theme.colors.tertiary};
+  background-color: ${({ theme }) => theme.bg3};
 `

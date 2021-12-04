@@ -1,18 +1,18 @@
 import React from 'react'
 import styled from 'styled-components'
-import { ExternalLink } from '../Shared'
+import { ExternalLink } from '../../theme'
 
 const InfoCard = styled.button<{ active?: boolean }>`
-  background-color: ${({ theme, active }) => (active ? theme.colors.tertiary : theme.colors.invertedContrast)};
+  background-color: ${({ theme, active }) => (active ? theme.bg3 : theme.bg2)};
   padding: 1rem;
   outline: none;
   border: 1px solid;
   border-radius: 12px;
   width: 100% !important;
   &:focus {
-    box-shadow: 0 0 0 1px ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 1px ${({ theme }) => theme.primary1};
   }
-  border-color: ${({ theme, active }) => (active ? 'transparent' : theme.colors.tertiary)};
+  border-color: ${({ theme, active }) => (active ? 'transparent' : theme.bg3)};
 `
 
 const OptionCard = styled(InfoCard as any)`
@@ -25,8 +25,7 @@ const OptionCard = styled(InfoCard as any)`
 `
 
 const OptionCardLeft = styled.div`
-  display: flex;
-  flex-flow: column nowrap;
+  ${({ theme }) => theme.flexColumnNoWrap};
   justify-content: center;
   height: 100%;
 `
@@ -35,14 +34,13 @@ const OptionCardClickable = styled(OptionCard as any)<{ clickable?: boolean }>`
   margin-top: 0;
   &:hover {
     cursor: ${({ clickable }) => (clickable ? 'pointer' : '')};
-    border: ${({ clickable, theme }) => (clickable ? `1px solid ${theme.colors.primary}` : ``)};
+    border: ${({ clickable, theme }) => (clickable ? `1px solid ${theme.primary1}` : ``)};
   }
   opacity: ${({ disabled }) => (disabled ? '0.5' : '1')};
 `
 
 const GreenCircle = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
+  ${({ theme }) => theme.flexRowNoWrap}
   justify-content: center;
   align-items: center;
 
@@ -50,45 +48,43 @@ const GreenCircle = styled.div`
     height: 8px;
     width: 8px;
     margin-right: 8px;
-    background-color: ${({ theme }) => theme.colors.success};
+    background-color: ${({ theme }) => theme.green1};
     border-radius: 50%;
   }
 `
 
 const CircleWrapper = styled.div`
-  color: ${({ theme }) => theme.colors.success};
+  color: ${({ theme }) => theme.green1};
   display: flex;
   justify-content: center;
   align-items: center;
 `
 
 const HeaderText = styled.div`
-  display: flex;
-  flex-flow: row nowrap;
-  color: ${props => (props.color === 'blue' ? ({ theme }) => theme.colors.primary : ({ theme }) => theme.colors.text)};
+  ${({ theme }) => theme.flexRowNoWrap};
+  color: ${props => (props.color === 'blue' ? ({ theme }) => theme.primary1 : ({ theme }) => theme.text1)};
   font-size: 1rem;
   font-weight: 500;
 `
 
 const SubHeader = styled.div`
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.text1};
   margin-top: 10px;
   font-size: 12px;
 `
 
 const IconWrapper = styled.div<{ size?: number | null }>`
-  display: flex;
-  flex-flow: column nowrap;
+  ${({ theme }) => theme.flexColumnNoWrap};
   align-items: center;
   justify-content: center;
   & > img,
   span {
-    height: ${({ size }) => (size ? `${size  }px` : '24px')};
-    width: ${({ size }) => (size ? `${size  }px` : '24px')};
+    height: ${({ size }) => (size ? size + 'px' : '24px')};
+    width: ${({ size }) => (size ? size + 'px' : '24px')};
   }
-  ${({ theme }) => theme.mediaQueries.lg} {
+  ${({ theme }) => theme.mediaWidth.upToMedium`
     align-items: flex-end;
-  }
+  `};
 `
 
 export default function Option({
@@ -132,7 +128,7 @@ export default function Option({
         {subheader && <SubHeader>{subheader}</SubHeader>}
       </OptionCardLeft>
       <IconWrapper size={size}>
-        <img src={icon} alt="Icon" />
+        <img src={icon} alt={'Icon'} />
       </IconWrapper>
     </OptionCardClickable>
   )

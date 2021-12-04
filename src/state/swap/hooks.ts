@@ -1,11 +1,9 @@
+import useENS from '../../hooks/useENS'
 import { parseUnits } from '@ethersproject/units'
-import { Currency, CurrencyAmount, ETHER, JSBI, Token, TokenAmount, Trade } from '@pancakeswap-libs/sdk'
+import { Currency, CurrencyAmount, DEV, JSBI, Token, TokenAmount, Trade } from 'moonbeamswap'
 import { ParsedQs } from 'qs'
 import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import useToggledVersion, { Version } from '../../hooks/useToggledVersion'
-import useENS from '../../hooks/useENS'
-import { useV1Trade } from '../../data/V1'
 import { useActiveWeb3React } from '../../hooks'
 import { useCurrency } from '../../hooks/Tokens'
 import { useTradeExactIn, useTradeExactOut } from '../../hooks/Trades'
@@ -15,12 +13,13 @@ import { AppDispatch, AppState } from '../index'
 import { useCurrencyBalances } from '../wallet/hooks'
 import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
 import { SwapState } from './reducer'
-
 import { useUserSlippageTolerance } from '../user/hooks'
 import { computeSlippageAdjustedAmounts } from '../../utils/prices'
+import { useTranslation } from 'react-i18next'
+import { factory, routerv2 } from '../../moonbase_address.json'
 
 export function useSwapState(): AppState['swap'] {
-  return useSelector<AppState, AppState['swap']>((state) => state.swap)
+  return useSelector<AppState, AppState['swap']>(state => state.swap)
 }
 
 export function useSwapActionHandlers(): {
@@ -35,7 +34,7 @@ export function useSwapActionHandlers(): {
       dispatch(
         selectCurrency({
           field,
-          currencyId: currency instanceof Token ? currency.address : currency === ETHER ? 'ETH' : '',
+          currencyId: currency instanceof Token ? currency.address : currency === DEV ? 'ETH' : ''
         })
       )
     },
@@ -64,7 +63,7 @@ export function useSwapActionHandlers(): {
     onSwitchTokens,
     onCurrencySelection,
     onUserInput,
-    onChangeRecipient,
+    onChangeRecipient
   }
 }
 
@@ -82,16 +81,15 @@ export function tryParseAmount(value?: string, currency?: Currency): CurrencyAmo
     }
   } catch (error) {
     // should fail if the user specifies too many decimal places of precision (or maybe exceed max uint?)
-    console.info(`Failed to parse input amount: "${value}"`, error)
+    console.debug(`Failed to parse input amount: "${value}"`, error)
   }
   // necessary for all paths to return a value
   return undefined
 }
 
 const BAD_RECIPIENT_ADDRESSES: string[] = [
-  '0xBCfCcbde45cE874adCB698cC183deBcF17952812', // v2 factory
-  '0xf164fC0Ec4E93095b804a4795bBe1e041497b92a', // v2 router 01
-  '0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F', // v2 router 02
+  factory, // v2 factory
+  routerv2 // v2 router 02
 ]
 
 /**
@@ -101,8 +99,8 @@ const BAD_RECIPIENT_ADDRESSES: string[] = [
  */
 function involvesAddress(trade: Trade, checksummedAddress: string): boolean {
   return (
-    trade.route.path.some((token) => token.address === checksummedAddress) ||
-    trade.route.pairs.some((pair) => pair.liquidityToken.address === checksummedAddress)
+    trade.route.path.some(token => token.address === checksummedAddress) ||
+    trade.route.pairs.some(pair => pair.liquidityToken.address === checksummedAddress)
   )
 }
 
@@ -113,18 +111,17 @@ export function useDerivedSwapInfo(): {
   parsedAmount: CurrencyAmount | undefined
   v2Trade: Trade | undefined
   inputError?: string
-  v1Trade: Trade | undefined
 } {
   const { account } = useActiveWeb3React()
 
-  const toggledVersion = useToggledVersion()
+  const { t } = useTranslation()
 
   const {
     independentField,
     typedValue,
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
-    recipient,
+    recipient
   } = useSwapState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
@@ -134,7 +131,7 @@ export function useDerivedSwapInfo(): {
 
   const relevantTokenBalances = useCurrencyBalances(account ?? undefined, [
     inputCurrency ?? undefined,
-    outputCurrency ?? undefined,
+    outputCurrency ?? undefined
   ])
 
   const isExactIn: boolean = independentField === Field.INPUT
@@ -147,62 +144,52 @@ export function useDerivedSwapInfo(): {
 
   const currencyBalances = {
     [Field.INPUT]: relevantTokenBalances[0],
-    [Field.OUTPUT]: relevantTokenBalances[1],
+    [Field.OUTPUT]: relevantTokenBalances[1]
   }
 
   const currencies: { [field in Field]?: Currency } = {
     [Field.INPUT]: inputCurrency ?? undefined,
-    [Field.OUTPUT]: outputCurrency ?? undefined,
+    [Field.OUTPUT]: outputCurrency ?? undefined
   }
-
-  // get link to trade on v1, if a better rate exists
-  const v1Trade = useV1Trade(isExactIn, currencies[Field.INPUT], currencies[Field.OUTPUT], parsedAmount)
 
   let inputError: string | undefined
   if (!account) {
-    inputError = 'Connect Wallet'
+    inputError = t('connectWallet')
   }
 
   if (!parsedAmount) {
-    inputError = inputError ?? 'Enter an amount'
+    inputError = inputError ?? t('enterAnAmount')
   }
 
   if (!currencies[Field.INPUT] || !currencies[Field.OUTPUT]) {
-    inputError = inputError ?? 'Select a token'
+    inputError = inputError ?? t('selectAToken')
   }
 
   const formattedTo = isAddress(to)
   if (!to || !formattedTo) {
-    inputError = inputError ?? 'Enter a recipient'
-  } else if (
-    BAD_RECIPIENT_ADDRESSES.indexOf(formattedTo) !== -1 ||
-    (bestTradeExactIn && involvesAddress(bestTradeExactIn, formattedTo)) ||
-    (bestTradeExactOut && involvesAddress(bestTradeExactOut, formattedTo))
-  ) {
-    inputError = inputError ?? 'Invalid recipient'
+    inputError = inputError ?? t('enterARecipient')
+  } else {
+    if (
+      BAD_RECIPIENT_ADDRESSES.indexOf(formattedTo) !== -1 ||
+      (bestTradeExactIn && involvesAddress(bestTradeExactIn, formattedTo)) ||
+      (bestTradeExactOut && involvesAddress(bestTradeExactOut, formattedTo))
+    ) {
+      inputError = inputError ?? t('invalidRecipt')
+    }
   }
 
   const [allowedSlippage] = useUserSlippageTolerance()
 
   const slippageAdjustedAmounts = v2Trade && allowedSlippage && computeSlippageAdjustedAmounts(v2Trade, allowedSlippage)
 
-  const slippageAdjustedAmountsV1 =
-    v1Trade && allowedSlippage && computeSlippageAdjustedAmounts(v1Trade, allowedSlippage)
-
   // compare input balance to max input based on version
   const [balanceIn, amountIn] = [
     currencyBalances[Field.INPUT],
-    toggledVersion === Version.v1
-      ? slippageAdjustedAmountsV1
-        ? slippageAdjustedAmountsV1[Field.INPUT]
-        : null
-      : slippageAdjustedAmounts
-      ? slippageAdjustedAmounts[Field.INPUT]
-      : null,
+    slippageAdjustedAmounts ? slippageAdjustedAmounts[Field.INPUT] : null
   ]
 
   if (balanceIn && amountIn && balanceIn.lessThan(amountIn)) {
-    inputError = `Insufficient ${amountIn.currency.symbol} balance`
+    inputError = 'Insufficient ' + amountIn.currency.symbol + ' balance'
   }
 
   return {
@@ -210,8 +197,7 @@ export function useDerivedSwapInfo(): {
     currencyBalances,
     parsedAmount,
     v2Trade: v2Trade ?? undefined,
-    inputError,
-    v1Trade,
+    inputError
   }
 }
 
@@ -226,7 +212,6 @@ function parseCurrencyFromURLParameter(urlParam: any): string {
 }
 
 function parseTokenAmountURLParameter(urlParam: any): string {
-  // eslint-disable-next-line no-restricted-globals
   return typeof urlParam === 'string' && !isNaN(parseFloat(urlParam)) ? urlParam : ''
 }
 
@@ -260,14 +245,14 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 
   return {
     [Field.INPUT]: {
-      currencyId: inputCurrency,
+      currencyId: inputCurrency
     },
     [Field.OUTPUT]: {
-      currencyId: outputCurrency,
+      currencyId: outputCurrency
     },
     typedValue: parseTokenAmountURLParameter(parsedQs.exactAmount),
     independentField: parseIndependentFieldURLParameter(parsedQs.exactField),
-    recipient,
+    recipient
   }
 }
 
@@ -292,7 +277,7 @@ export function useDefaultsFromURLSearch():
         field: parsed.independentField,
         inputCurrencyId: parsed[Field.INPUT].currencyId,
         outputCurrencyId: parsed[Field.OUTPUT].currencyId,
-        recipient: parsed.recipient,
+        recipient: parsed.recipient
       })
     )
 

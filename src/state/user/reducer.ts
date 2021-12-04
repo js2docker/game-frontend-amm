@@ -1,5 +1,5 @@
-import { createReducer } from '@reduxjs/toolkit'
 import { INITIAL_ALLOWED_SLIPPAGE, DEFAULT_DEADLINE_FROM_NOW } from '../../constants'
+import { createReducer } from '@reduxjs/toolkit'
 import { updateVersion } from '../global/actions'
 import {
   addSerializedPair,
@@ -12,9 +12,7 @@ import {
   updateUserDarkMode,
   updateUserExpertMode,
   updateUserSlippageTolerance,
-  updateUserDeadline,
-  muteAudio,
-  unmuteAudio
+  updateUserDeadline
 } from './actions'
 
 const currentTimestamp = () => new Date().getTime()
@@ -48,8 +46,6 @@ export interface UserState {
   }
 
   timestamp: number
-
-  audioPlay: boolean
 }
 
 function pairKey(token0Address: string, token1Address: string) {
@@ -64,8 +60,7 @@ export const initialState: UserState = {
   userDeadline: DEFAULT_DEADLINE_FROM_NOW,
   tokens: {},
   pairs: {},
-  timestamp: currentTimestamp(),
-  audioPlay: true
+  timestamp: currentTimestamp()
 }
 
 export default createReducer(initialState, builder =>
@@ -120,7 +115,7 @@ export default createReducer(initialState, builder =>
         serializedPair.token0.chainId === serializedPair.token1.chainId &&
         serializedPair.token0.address !== serializedPair.token1.address
       ) {
-        const {chainId} = serializedPair.token0
+        const chainId = serializedPair.token0.chainId
         state.pairs[chainId] = state.pairs[chainId] || {}
         state.pairs[chainId][pairKey(serializedPair.token0.address, serializedPair.token1.address)] = serializedPair
       }
@@ -133,11 +128,5 @@ export default createReducer(initialState, builder =>
         delete state.pairs[chainId][pairKey(tokenBAddress, tokenAAddress)]
       }
       state.timestamp = currentTimestamp()
-    })
-    .addCase(muteAudio, state => {
-      state.audioPlay = false
-    })
-    .addCase(unmuteAudio, state => {
-      state.audioPlay = true
     })
 )

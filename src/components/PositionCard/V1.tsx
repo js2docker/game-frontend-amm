@@ -1,19 +1,24 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link, RouteComponentProps, withRouter } from 'react-router-dom'
-import { Token, TokenAmount, WETH } from '@pancakeswap-libs/sdk'
-import { Button, Text } from '@pancakeswap-libs/uikit'
+import { Token, TokenAmount, WDEV } from 'moonbeamswap'
+
+import { Text } from 'rebass'
 import { AutoColumn } from '../Column'
+import { ButtonSecondary } from '../Button'
 import { RowBetween, RowFixed } from '../Row'
 import { FixedHeightRow, HoverCard } from './index'
 import DoubleCurrencyLogo from '../DoubleLogo'
 import { useActiveWeb3React } from '../../hooks'
+import { ThemeContext } from 'styled-components'
 
-interface PositionCardProps extends RouteComponentProps<any> {
+interface PositionCardProps extends RouteComponentProps<{}> {
   token: Token
   V1LiquidityBalance: TokenAmount
 }
 
 function V1PositionCard({ token, V1LiquidityBalance }: PositionCardProps) {
+  const theme = useContext(ThemeContext)
+
   const { chainId } = useActiveWeb3React()
 
   return (
@@ -21,17 +26,19 @@ function V1PositionCard({ token, V1LiquidityBalance }: PositionCardProps) {
       <AutoColumn gap="12px">
         <FixedHeightRow>
           <RowFixed>
-            <DoubleCurrencyLogo currency0={token} margin size={20} />
-            <Text fontSize="20px" style={{ marginLeft: '' }}>
-              {`${chainId && token.equals(WETH[chainId]) ? 'WETH' : token.symbol}/ETH`}
+            <DoubleCurrencyLogo currency0={token} margin={true} size={20} />
+            <Text fontWeight={500} fontSize={20} style={{ marginLeft: '' }}>
+              {`${chainId && token.equals(WDEV[chainId]) ? 'WDEV' : token.symbol}/ETH`}
             </Text>
             <Text
-              fontSize="12px"
+              fontSize={12}
+              fontWeight={500}
               ml="0.5rem"
               px="0.75rem"
               py="0.25rem"
               style={{ borderRadius: '1rem' }}
-              color="black"
+              backgroundColor={theme.yellow1}
+              color={'black'}
             >
               V1
             </Text>
@@ -40,18 +47,18 @@ function V1PositionCard({ token, V1LiquidityBalance }: PositionCardProps) {
 
         <AutoColumn gap="8px">
           <RowBetween marginTop="10px">
-            <Button style={{ width: '68%' }} as={Link} to={`/migrate/v1/${V1LiquidityBalance.token.address}`}>
+            <ButtonSecondary width="68%" as={Link} to={`/migrate/v1/${V1LiquidityBalance.token.address}`}>
               Migrate
-            </Button>
+            </ButtonSecondary>
 
-            <Button
-              variant="secondary"
-              style={{ width: '28%' }}
+            <ButtonSecondary
+              style={{ backgroundColor: 'transparent' }}
+              width="28%"
               as={Link}
               to={`/remove/v1/${V1LiquidityBalance.token.address}`}
             >
               Remove
-            </Button>
+            </ButtonSecondary>
           </RowBetween>
         </AutoColumn>
       </AutoColumn>

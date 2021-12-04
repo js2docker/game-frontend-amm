@@ -1,16 +1,14 @@
-import { Currency, ETHER, Token } from '@pancakeswap-libs/sdk'
+import { Currency, DEV, Token } from 'moonbeamswap'
 import React, { KeyboardEvent, RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Text, CloseIcon } from '@pancakeswap-libs/uikit'
-import { useSelector } from 'react-redux'
+import ReactGA from 'react-ga'
 import { useTranslation } from 'react-i18next'
 import { FixedSizeList } from 'react-window'
+import { Text } from 'rebass'
 import { ThemeContext } from 'styled-components'
-import AutoSizer from 'react-virtualized-auto-sizer'
 import { useActiveWeb3React } from '../../hooks'
-import { AppState } from '../../state'
 import { useAllTokens, useToken } from '../../hooks/Tokens'
 import { useSelectedListInfo } from '../../state/lists/hooks'
-import { LinkStyledButton, TYPE } from '../Shared'
+import { CloseIcon, LinkStyledButton, TYPE } from '../../theme'
 import { isAddress } from '../../utils'
 import Card from '../Card'
 import Column from '../Column'
@@ -23,10 +21,7 @@ import { filterTokens } from './filtering'
 import SortButton from './SortButton'
 import { useTokenComparator } from './sorting'
 import { PaddedColumn, SearchInput, Separator } from './styleds'
-import TranslatedText from '../TranslatedText'
-import { TranslateString } from '../../utils/translateTextHelpers'
-
-const { main: Main } = TYPE
+import AutoSizer from 'react-virtualized-auto-sizer'
 
 interface CurrencySearchProps {
   isOpen: boolean
@@ -45,7 +40,7 @@ export function CurrencySearch({
   showCommonBases,
   onDismiss,
   isOpen,
-  onChangeList,
+  onChangeList
 }: CurrencySearchProps) {
   const { t } = useTranslation()
   const { chainId } = useActiveWeb3React()
@@ -60,14 +55,22 @@ export function CurrencySearch({
   const isAddressSearch = isAddress(searchQuery)
   const searchToken = useToken(searchQuery)
 
+  useEffect(() => {
+    if (isAddressSearch) {
+      ReactGA.event({
+        category: 'Currency Select',
+        action: 'Search by address',
+        label: isAddressSearch
+      })
+    }
+  }, [isAddressSearch])
+
   const showETH: boolean = useMemo(() => {
     const s = searchQuery.toLowerCase().trim()
-    return s === '' || s === 'e' || s === 'et' || s === 'eth'
+    return s === '' || s === 'd' || s === 'de' || s === 'dev'
   }, [searchQuery])
 
   const tokenComparator = useTokenComparator(invertSearchOrder)
-
-  const audioPlay = useSelector<AppState, AppState['user']['audioPlay']>((state) => state.user.audioPlay)
 
   const filteredTokens: Token[] = useMemo(() => {
     if (isAddressSearch) return searchToken ? [searchToken] : []
@@ -80,14 +83,14 @@ export function CurrencySearch({
     const symbolMatch = searchQuery
       .toLowerCase()
       .split(/\s+/)
-      .filter((s) => s.length > 0)
+      .filter(s => s.length > 0)
     if (symbolMatch.length > 1) return sorted
 
     return [
       ...(searchToken ? [searchToken] : []),
       // sort any exact symbol matches first
-      ...sorted.filter((token) => token.symbol?.toLowerCase() === symbolMatch[0]),
-      ...sorted.filter((token) => token.symbol?.toLowerCase() !== symbolMatch[0]),
+      ...sorted.filter(token => token.symbol?.toLowerCase() === symbolMatch[0]),
+      ...sorted.filter(token => token.symbol?.toLowerCase() !== symbolMatch[0])
     ]
   }, [filteredTokens, searchQuery, searchToken, tokenComparator])
 
@@ -95,14 +98,8 @@ export function CurrencySearch({
     (currency: Currency) => {
       onCurrencySelect(currency)
       onDismiss()
-      if (audioPlay) {
-        const audio = document.getElementById('bgMusic') as HTMLAudioElement
-        if (audio) {
-          audio.play()
-        }
-      }
     },
-    [onDismiss, onCurrencySelect, audioPlay]
+    [onDismiss, onCurrencySelect]
   )
 
   // clear the input on open
@@ -112,7 +109,7 @@ export function CurrencySearch({
 
   // manage focus on modal show
   const inputRef = useRef<HTMLInputElement>()
-  const handleInput = useCallback((event) => {
+  const handleInput = useCallback(event => {
     const input = event.target.value
     const checksummedInput = isAddress(input)
     setSearchQuery(checksummedInput || input)
@@ -123,8 +120,8 @@ export function CurrencySearch({
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
         const s = searchQuery.toLowerCase().trim()
-        if (s === 'eth') {
-          handleCurrencySelect(ETHER)
+        if (s === 'dev') {
+          handleCurrencySelect(DEV)
         } else if (filteredSortedTokens.length > 0) {
           if (
             filteredSortedTokens[0].symbol?.toLowerCase() === searchQuery.trim().toLowerCase() ||
@@ -144,14 +141,9 @@ export function CurrencySearch({
     <Column style={{ width: '100%', flex: '1 1' }}>
       <PaddedColumn gap="14px">
         <RowBetween>
-          <Text>
-            <TranslatedText translationId={82}>Select a token</TranslatedText>
-            <QuestionHelper
-              text={TranslateString(
-                130,
-                'Find a token by searching for its name or symbol or by pasting its address below.'
-              )}
-            />
+          <Text fontWeight={500} fontSize={16}>
+            Select a token
+            <QuestionHelper text="Find a token by searching for its name or symbol or by pasting its address below." />
           </Text>
           <CloseIcon onClick={onDismiss} />
         </RowBetween>
@@ -168,10 +160,10 @@ export function CurrencySearch({
           <CommonBases chainId={chainId} onSelect={handleCurrencySelect} selectedCurrency={selectedCurrency} />
         )}
         <RowBetween>
-          <Text fontSize="14px">
-            <TranslatedText translationId={126}>Token name</TranslatedText>
+          <Text fontSize={14} fontWeight={500}>
+            Token Name
           </Text>
-          <SortButton ascending={invertSearchOrder} toggleSortOrder={() => setInvertSearchOrder((iso) => !iso)} />
+          <SortButton ascending={invertSearchOrder} toggleSortOrder={() => setInvertSearchOrder(iso => !iso)} />
         </RowBetween>
       </PaddedColumn>
 
@@ -193,36 +185,30 @@ export function CurrencySearch({
         </AutoSizer>
       </div>
 
-      {null && (
-        <>
-          <Separator />
-          <Card>
-            <RowBetween>
-              {selectedListInfo.current ? (
-                <Row>
-                  {selectedListInfo.current.logoURI ? (
-                    <ListLogo
-                      style={{ marginRight: 12 }}
-                      logoURI={selectedListInfo.current.logoURI}
-                      alt={`${selectedListInfo.current.name} list logo`}
-                    />
-                  ) : null}
-                  <Main id="currency-search-selected-list-name">{selectedListInfo.current.name}</Main>
-                </Row>
+      <Separator />
+      <Card>
+        <RowBetween>
+          {selectedListInfo.current ? (
+            <Row>
+              {selectedListInfo.current.logoURI ? (
+                <ListLogo
+                  style={{ marginRight: 12 }}
+                  logoURI={selectedListInfo.current.logoURI}
+                  alt={`${selectedListInfo.current.name} list logo`}
+                />
               ) : null}
-              <LinkStyledButton
-                style={{ fontWeight: 500, color: theme.colors.textSubtle, fontSize: 16 }}
-                onClick={onChangeList}
-                id="currency-search-change-list-button"
-              >
-                {selectedListInfo.current ? 'Change' : 'Select a list'}
-              </LinkStyledButton>
-            </RowBetween>
-          </Card>
-        </>
-      )}
+              <TYPE.main id="currency-search-selected-list-name">{selectedListInfo.current.name}</TYPE.main>
+            </Row>
+          ) : null}
+          <LinkStyledButton
+            style={{ fontWeight: 500, color: theme.text2, fontSize: 16 }}
+            onClick={onChangeList}
+            id="currency-search-change-list-button"
+          >
+            {selectedListInfo.current ? 'Change' : 'Select a list'}
+          </LinkStyledButton>
+        </RowBetween>
+      </Card>
     </Column>
   )
 }
-
-export default CurrencySearch

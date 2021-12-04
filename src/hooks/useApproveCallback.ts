@@ -1,23 +1,21 @@
 import { MaxUint256 } from '@ethersproject/constants'
 import { TransactionResponse } from '@ethersproject/providers'
-import { Trade, TokenAmount, CurrencyAmount, ETHER } from '@pancakeswap-libs/sdk'
+import { Trade, TokenAmount, CurrencyAmount, DEV } from 'moonbeamswap'
 import { useCallback, useMemo } from 'react'
 import { ROUTER_ADDRESS } from '../constants'
 import { useTokenAllowance } from '../data/Allowances'
-import { getTradeVersion, useV1TradeExchangeAddress } from '../data/V1'
 import { Field } from '../state/swap/actions'
 import { useTransactionAdder, useHasPendingApproval } from '../state/transactions/hooks'
 import { computeSlippageAdjustedAmounts } from '../utils/prices'
 import { calculateGasMargin } from '../utils'
 import { useTokenContract } from './useContract'
 import { useActiveWeb3React } from './index'
-import { Version } from './useToggledVersion'
 
 export enum ApprovalState {
   UNKNOWN,
   NOT_APPROVED,
   PENDING,
-  APPROVED,
+  APPROVED
 }
 
 // returns a variable indicating the state of the approval and a function which approves if necessary or early returns
@@ -33,7 +31,7 @@ export function useApproveCallback(
   // check the current approval status
   const approvalState: ApprovalState = useMemo(() => {
     if (!amountToApprove || !spender) return ApprovalState.UNKNOWN
-    if (amountToApprove.currency === ETHER) return ApprovalState.APPROVED
+    if (amountToApprove.currency === DEV) return ApprovalState.APPROVED
     // we might not have enough data to know whether or not we need to approve
     if (!currentAllowance) return ApprovalState.UNKNOWN
 
@@ -80,19 +78,18 @@ export function useApproveCallback(
       return tokenContract.estimateGas.approve(spender, amountToApprove.raw.toString())
     })
 
-    // eslint-disable-next-line consistent-return
     return tokenContract
       .approve(spender, useExact ? amountToApprove.raw.toString() : MaxUint256, {
-        gasLimit: calculateGasMargin(estimatedGas),
+        gasLimit: calculateGasMargin(estimatedGas)
       })
       .then((response: TransactionResponse) => {
         addTransaction(response, {
-          summary: `Approve ${amountToApprove.currency.symbol}`,
-          approval: { tokenAddress: token.address, spender },
+          summary: 'Approve ' + amountToApprove.currency.symbol,
+          approval: { tokenAddress: token.address, spender: spender }
         })
       })
       .catch((error: Error) => {
-        console.error('Failed to approve token', error)
+        console.debug('Failed to approve token', error)
         throw error
       })
   }, [approvalState, token, tokenContract, amountToApprove, spender, addTransaction])
@@ -102,11 +99,10 @@ export function useApproveCallback(
 
 // wraps useApproveCallback in the context of a swap
 export function useApproveCallbackFromTrade(trade?: Trade, allowedSlippage = 0) {
+  const { chainId } = useActiveWeb3React()
   const amountToApprove = useMemo(
     () => (trade ? computeSlippageAdjustedAmounts(trade, allowedSlippage)[Field.INPUT] : undefined),
     [trade, allowedSlippage]
   )
-  const tradeIsV1 = getTradeVersion(trade) === Version.v1
-  const v1ExchangeAddress = useV1TradeExchangeAddress(trade)
-  return useApproveCallback(amountToApprove, tradeIsV1 ? v1ExchangeAddress : ROUTER_ADDRESS)
+  return useApproveCallback(amountToApprove, ROUTER_ADDRESS[chainId ? chainId : ''])
 }

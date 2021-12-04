@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { transparentize } from 'polished'
 import { RowBetween } from '../Row'
 import { AutoColumn } from '../Column'
+import { transparentize } from 'polished'
 
 const Wrapper = styled(AutoColumn)`
   margin-top: 1.25rem;
@@ -16,15 +16,14 @@ const Circle = styled.div<{ confirmed?: boolean; disabled?: boolean }>`
   min-width: 20px;
   min-height: 20px;
   background-color: ${({ theme, confirmed, disabled }) =>
-    disabled ? theme.colors.backgroundDisabled : confirmed ? theme.colors.success : theme.colors.primary};
+    disabled ? theme.bg4 : confirmed ? theme.green1 : theme.primary1};
   border-radius: 50%;
+  color: ${({ theme }) => theme.white};
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 8px;
   font-size: 12px;
-  color: ${({ theme, confirmed, disabled }) =>
-    disabled ? theme.colors.text : confirmed ? theme.colors.success : '#FFFFFF'};
 `
 
 const CircleRow = styled.div`
@@ -39,8 +38,8 @@ const Connector = styled.div<{ prevConfirmed?: boolean }>`
   background-color: ;
   background: linear-gradient(
     90deg,
-    ${({ theme, prevConfirmed }) => transparentize(0.5, prevConfirmed ? theme.colors.success : theme.colors.primary)} 0%,
-    ${({ theme, prevConfirmed }) => (prevConfirmed ? theme.colors.primary : theme.colors.backgroundDisabled)} 80%
+    ${({ theme, prevConfirmed }) => transparentize(0.5, prevConfirmed ? theme.green1 : theme.primary1)} 0%,
+    ${({ theme, prevConfirmed }) => (prevConfirmed ? theme.primary1 : theme.bg4)} 80%
   );
   opacity: 0.6;
 `
@@ -61,11 +60,10 @@ interface ProgressCirclesProps {
  */
 export default function ProgressCircles({ steps }: ProgressCirclesProps) {
   return (
-    <Wrapper justify="center">
+    <Wrapper justify={'center'}>
       <Grouping>
         {steps.map((step, i) => {
           return (
-            // eslint-disable-next-line react/no-array-index-key
             <CircleRow key={i}>
               <Circle confirmed={step} disabled={!steps[i - 1] && i !== 0}>
                 {step ? '✓' : i + 1}

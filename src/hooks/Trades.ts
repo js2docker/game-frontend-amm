@@ -1,4 +1,4 @@
-import { Currency, CurrencyAmount, Pair, Token, Trade } from '@pancakeswap-libs/sdk'
+import { Currency, CurrencyAmount, Pair, Token, Trade } from 'moonbeamswap'
 import flatMap from 'lodash.flatmap'
 import { useMemo } from 'react'
 
@@ -11,7 +11,6 @@ import { useActiveWeb3React } from './index'
 function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
   const { chainId } = useActiveWeb3React()
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const bases: Token[] = chainId ? BASES_TO_CHECK_TRADES_AGAINST[chainId] : []
 
   const [tokenA, tokenB] = chainId
@@ -20,7 +19,7 @@ function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
 
   const basePairs: [Token, Token][] = useMemo(
     () =>
-      flatMap(bases, (base): [Token, Token][] => bases.map((otherBase) => [base, otherBase])).filter(
+      flatMap(bases, (base): [Token, Token][] => bases.map(otherBase => [base, otherBase])).filter(
         ([t0, t1]) => t0.address !== t1.address
       ),
     [bases]
@@ -37,11 +36,10 @@ function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
             // token B against all bases
             ...bases.map((base): [Token, Token] => [tokenB, base]),
             // each base against all bases
-            ...basePairs,
+            ...basePairs
           ]
             .filter((tokens): tokens is [Token, Token] => Boolean(tokens[0] && tokens[1]))
             .filter(([t0, t1]) => t0.address !== t1.address)
-            // eslint-disable-next-line @typescript-eslint/no-shadow
             .filter(([tokenA, tokenB]) => {
               if (!chainId) return true
               const customBases = CUSTOM_BASES[chainId]
@@ -52,8 +50,8 @@ function useAllCommonPairs(currencyA?: Currency, currencyB?: Currency): Pair[] {
 
               if (!customBasesA && !customBasesB) return true
 
-              if (customBasesA && !customBasesA.find((base) => tokenB.equals(base))) return false
-              if (customBasesB && !customBasesB.find((base) => tokenA.equals(base))) return false
+              if (customBasesA && !customBasesA.find(base => tokenB.equals(base))) return false
+              if (customBasesB && !customBasesB.find(base => tokenA.equals(base))) return false
 
               return true
             })
@@ -88,7 +86,7 @@ export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?:
   return useMemo(() => {
     if (currencyAmountIn && currencyOut && allowedPairs.length > 0) {
       return (
-        Trade.bestTradeExactIn(allowedPairs, currencyAmountIn, currencyOut, { maxHops: 3, maxNumResults: 1 })[0] ?? null
+        Trade.bestTradeExactIn(allowedPairs, currencyAmountIn, currencyOut, { maxHops: 2, maxNumResults: 1 })[0] ?? null
       )
     }
     return null
@@ -104,7 +102,7 @@ export function useTradeExactOut(currencyIn?: Currency, currencyAmountOut?: Curr
   return useMemo(() => {
     if (currencyIn && currencyAmountOut && allowedPairs.length > 0) {
       return (
-        Trade.bestTradeExactOut(allowedPairs, currencyIn, currencyAmountOut, { maxHops: 3, maxNumResults: 1 })[0] ??
+        Trade.bestTradeExactOut(allowedPairs, currencyIn, currencyAmountOut, { maxHops: 2, maxNumResults: 1 })[0] ??
         null
       )
     }

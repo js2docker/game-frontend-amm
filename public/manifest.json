@@ -1,16 +1,16 @@
 {
-  "short_name": "GooseFinance",
-  "name": "GooseFinance",
+  "short_name": "DCTDEX",
+  "name": "DCTDEX",
   "icons": [
     {
       "src": "./logo.png",
-      "sizes": "160x160",
+      "sizes": "864x864",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ],
   "orientation": "portrait",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#ff007a",
+  "background_color": "#fff"
 }

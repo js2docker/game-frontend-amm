@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { Token, TokenAmount } from '@pancakeswap-libs/sdk'
+import { Token, TokenAmount } from 'moonbeamswap'
 import { useTokenContract } from '../hooks/useContract'
 import { useSingleCallResult } from '../state/multicall/hooks'
 
@@ -12,5 +12,3 @@ export function useTotalSupply(token?: Token): TokenAmount | undefined {
 
   return token && totalSupply ? new TokenAmount(token, totalSupply.toString()) : undefined
 }
-
-export default useTotalSupply

@@ -1,22 +1,20 @@
-import { Token } from '@pancakeswap-libs/sdk'
+import { Token } from 'moonbeamswap'
 import { transparentize } from 'polished'
-import { Button, Text } from '@pancakeswap-libs/uikit'
 import React, { useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
-import { AlertTriangle } from 'react-feather'
 import { useActiveWeb3React } from '../../hooks'
 import { useAllTokens } from '../../hooks/Tokens'
-import { ExternalLink, TYPE } from '../Shared'
+import { ExternalLink, TYPE } from '../../theme'
 import { getEtherscanLink, shortenAddress } from '../../utils'
 import CurrencyLogo from '../CurrencyLogo'
 import Modal from '../Modal'
 import { AutoRow, RowBetween } from '../Row'
 import { AutoColumn } from '../Column'
-
-const { main: Main, blue: Blue } = TYPE
+import { AlertTriangle } from 'react-feather'
+import { ButtonError } from '../Button'
 
 const Wrapper = styled.div<{ error: boolean }>`
-  background: ${({ theme }) => transparentize(0.6, theme.colors.tertiary)};
+  background: ${({ theme }) => transparentize(0.6, theme.bg3)};
   padding: 0.75rem;
   border-radius: 20px;
 `
@@ -32,7 +30,7 @@ const WarningContainer = styled.div`
 `
 
 const StyledWarningIcon = styled(AlertTriangle)`
-  stroke: ${({ theme }) => theme.colors.failure};
+  stroke: ${({ theme }) => theme.red2};
 `
 
 interface TokenWarningCardProps {
@@ -50,7 +48,7 @@ function TokenWarningCard({ token }: TokenWarningCardProps) {
   const duplicateNameOrSymbol = useMemo(() => {
     if (!token || !chainId) return false
 
-    return Object.keys(allTokens).some((tokenAddress) => {
+    return Object.keys(allTokens).some(tokenAddress => {
       const userToken = allTokens[tokenAddress]
       if (userToken.equals(token)) {
         return false
@@ -65,18 +63,18 @@ function TokenWarningCard({ token }: TokenWarningCardProps) {
     <Wrapper error={duplicateNameOrSymbol}>
       <AutoRow gap="6px">
         <AutoColumn gap="24px">
-          <CurrencyLogo currency={token} size="16px" />
+          <CurrencyLogo currency={token} size={'16px'} />
           <div> </div>
         </AutoColumn>
         <AutoColumn gap="10px" justify="flex-start">
-          <Main>
+          <TYPE.main>
             {token && token.name && token.symbol && token.name !== token.symbol
               ? `${token.name} (${token.symbol})`
               : token.name || token.symbol}{' '}
-          </Main>
+          </TYPE.main>
           {chainId && (
             <ExternalLink style={{ fontWeight: 400 }} href={getEtherscanLink(chainId, token.address, 'token')}>
-              <Blue title={token.address}>{shortenAddress(token.address)} (View on BscScan)</Blue>
+              <TYPE.blue title={token.address}>{shortenAddress(token.address)} (View on Moonbeam explorer)</TYPE.blue>
             </ExternalLink>
           )}
         </AutoColumn>
@@ -88,14 +86,14 @@ function TokenWarningCard({ token }: TokenWarningCardProps) {
 export default function TokenWarningModal({
   isOpen,
   tokens,
-  onConfirm,
+  onConfirm
 }: {
   isOpen: boolean
   tokens: Token[]
   onConfirm: () => void
 }) {
   const [understandChecked, setUnderstandChecked] = useState(false)
-  const toggleUnderstand = useCallback(() => setUnderstandChecked((uc) => !uc), [])
+  const toggleUnderstand = useCallback(() => setUnderstandChecked(uc => !uc), [])
 
   const handleDismiss = useCallback(() => null, [])
   return (
@@ -104,48 +102,49 @@ export default function TokenWarningModal({
         <AutoColumn gap="lg">
           <AutoRow gap="6px">
             <StyledWarningIcon />
-            <Text color="failure">Token imported</Text>
+            <TYPE.main color={'red2'}>Token imported</TYPE.main>
           </AutoRow>
-          <Text>
-            Anyone can create an BEP20 token on BSC with <em>any</em> name, including creating fake versions of existing
-            tokens and tokens that claim to represent projects that do not have a token.
-          </Text>
-          <Text>
+          <TYPE.body color={'red2'}>
+            Anyone can create an ERC20 token on Ethereum with <em>any</em> name, including creating fake versions of
+            existing tokens and tokens that claim to represent projects that do not have a token.
+          </TYPE.body>
+          <TYPE.body color={'red2'}>
             This interface can load arbitrary tokens by token addresses. Please take extra caution and do your research
-            when interacting with arbitrary BEP20 tokens.
-          </Text>
-          <Text>
+            when interacting with arbitrary ERC20 tokens.
+          </TYPE.body>
+          <TYPE.body color={'red2'}>
             If you purchase an arbitrary token, <strong>you may be unable to sell it back.</strong>
-          </Text>
-          {tokens.map((token) => {
+          </TYPE.body>
+          {tokens.map(token => {
             return <TokenWarningCard key={token.address} token={token} />
           })}
           <RowBetween>
             <div>
-              <label htmlFor="understand-checkbox" style={{ cursor: 'pointer', userSelect: 'none' }}>
+              <label style={{ cursor: 'pointer', userSelect: 'none' }}>
                 <input
-                  id="understand-checkbox"
                   type="checkbox"
                   className="understand-checkbox"
                   checked={understandChecked}
                   onChange={toggleUnderstand}
                 />{' '}
-                <Text as="span" ml="4px">
-                  I understand
-                </Text>
+                I understand
               </label>
             </div>
-            <Button
+            <ButtonError
               disabled={!understandChecked}
-              variant="danger"
-              style={{ width: '140px' }}
+              error={true}
+              width={'140px'}
+              padding="0.5rem 1rem"
               className="token-dismiss-button"
+              style={{
+                borderRadius: '10px'
+              }}
               onClick={() => {
                 onConfirm()
               }}
             >
-              Continue
-            </Button>
+              <TYPE.body color="white">Continue</TYPE.body>
+            </ButtonError>
           </RowBetween>
         </AutoColumn>
       </WarningContainer>

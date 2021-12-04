@@ -1,23 +1,23 @@
-import React, { useCallback, useMemo } from 'react'
 import { diffTokenLists, TokenList } from '@uniswap/token-lists'
-import { Button, Text } from '@pancakeswap-libs/uikit'
+import React, { useCallback, useMemo } from 'react'
+import ReactGA from 'react-ga'
 import { useDispatch } from 'react-redux'
+import { Text } from 'rebass'
 import { AppDispatch } from '../../state'
 import { useRemovePopup } from '../../state/application/hooks'
 import { acceptListUpdate } from '../../state/lists/actions'
-import { TYPE } from '../Shared'
+import { TYPE } from '../../theme'
 import listVersionLabel from '../../utils/listVersionLabel'
+import { ButtonSecondary } from '../Button'
 import { AutoColumn } from '../Column'
 import { AutoRow } from '../Row'
-
-const { body: Body } = TYPE
 
 export default function ListUpdatePopup({
   popKey,
   listUrl,
   oldList,
   newList,
-  auto,
+  auto
 }: {
   popKey: string
   listUrl: string
@@ -31,6 +31,11 @@ export default function ListUpdatePopup({
 
   const handleAcceptUpdate = useCallback(() => {
     if (auto) return
+    ReactGA.event({
+      category: 'Lists',
+      action: 'Update List from Popup',
+      label: listUrl
+    })
     dispatch(acceptListUpdate(listUrl))
     removeThisPopup()
   }, [auto, dispatch, listUrl, removeThisPopup])
@@ -48,14 +53,14 @@ export default function ListUpdatePopup({
     <AutoRow>
       <AutoColumn style={{ flex: '1' }} gap="8px">
         {auto ? (
-          <Body fontWeight={500}>
+          <TYPE.body fontWeight={500}>
             The token list &quot;{oldList.name}&quot; has been updated to{' '}
             <strong>{listVersionLabel(newList.version)}</strong>.
-          </Body>
+          </TYPE.body>
         ) : (
           <>
             <div>
-              <Text fontSize="14px">
+              <Text>
                 An update is available for the token list &quot;{oldList.name}&quot; (
                 {listVersionLabel(oldList.version)} to {listVersionLabel(newList.version)}).
               </Text>
@@ -87,10 +92,10 @@ export default function ListUpdatePopup({
             </div>
             <AutoRow>
               <div style={{ flexGrow: 1, marginRight: 12 }}>
-                <Button onClick={handleAcceptUpdate}>Accept update</Button>
+                <ButtonSecondary onClick={handleAcceptUpdate}>Accept update</ButtonSecondary>
               </div>
               <div style={{ flexGrow: 1 }}>
-                <Button onClick={removeThisPopup}>Dismiss</Button>
+                <ButtonSecondary onClick={removeThisPopup}>Dismiss</ButtonSecondary>
               </div>
             </AutoRow>
           </>

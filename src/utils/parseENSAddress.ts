@@ -5,5 +5,3 @@ export function parseENSAddress(ensAddress: string): { ensName: string; ensPath:
   if (!match) return undefined
   return { ensName: `${match[1].toLowerCase()}eth`, ensPath: match[3] }
 }
-
-export default parseENSAddress
